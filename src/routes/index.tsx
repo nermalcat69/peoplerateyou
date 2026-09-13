@@ -1,27 +1,10 @@
-import { createServerFn } from "@tanstack/react-start";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { Welcome } from "../welcome/welcome";
-
-const getCloudflareMessage = createServerFn({ method: "GET" }).handler(
-	async () => {
-		const { env } = await import("cloudflare:workers");
-		return env.VALUE_FROM_CLOUDFLARE;
-	},
-);
+import { getCurrentUserFn } from "../server/auth";
 
 export const Route = createFileRoute("/")({
-	head: () => ({
-		meta: [
-			{ title: "New TanStack Start App" },
-			{ name: "description", content: "Welcome to TanStack Start!" },
-		],
-	}),
-	loader: () => getCloudflareMessage(),
-	component: Home,
+	beforeLoad: async () => {
+		const user = await getCurrentUserFn();
+		throw redirect({ to: user ? "/feed" : "/login" });
+	},
 });
-
-function Home() {
-	const message = Route.useLoaderData();
-	return <Welcome message={message} />;
-}

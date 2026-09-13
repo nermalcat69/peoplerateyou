@@ -13,4 +13,11 @@ export default defineConfig({
 		viteReact(),
 		tsconfigPaths(),
 	],
+	build: {
+		// "cloudflare:workers" is a Workers-runtime-only virtual module. Server
+		// code that imports it (dynamically, so it's never eagerly evaluated on
+		// the client) still needs Rollup to resolve the specifier when bundling
+		// the client environment, even though that code path never runs there.
+		rollupOptions: { external: ["cloudflare:workers"] },
+	},
 });
