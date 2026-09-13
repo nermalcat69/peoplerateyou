@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
 import { addCommentFn, listCommentsFn, listFeedFn, ratePhotoFn, uploadPhotoFn } from "../server/photos";
+import { authClient } from "../lib/auth-client";
 
 export const Route = createFileRoute("/_authenticated/feed")({
 	loader: () => listFeedFn(),
@@ -38,31 +39,53 @@ function FeedPage() {
 	}
 
 	return (
-		<div className="py-6 space-y-8">
-			<form
-				onSubmit={handleUpload}
-				className="flex flex-col gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 p-4"
-			>
-				<label className="text-sm font-medium">Upload a photo</label>
-				<input type="file" name="file" accept="image/png,image/jpeg" required />
-				{uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
-				<button
-					type="submit"
-					disabled={uploading}
-					className="self-start rounded-full bg-blue-700 text-white px-4 py-2 text-sm disabled:opacity-50"
+		<div className="max-w-2xl mx-auto px-4">
+			<header className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700">
+				<span className="font-semibold">PeopleRateYou</span>
+				<div className="flex items-center gap-3 text-sm">
+					<Link to="/profile" className="text-blue-700 dark:text-blue-500 hover:underline">
+						Dashboard
+					</Link>
+					<button
+						type="button"
+						className="text-blue-700 dark:text-blue-500 hover:underline"
+						onClick={async () => {
+							await authClient.signOut();
+							await router.invalidate();
+							await router.navigate({ to: "/login" });
+						}}
+					>
+						Log out
+					</button>
+				</div>
+			</header>
+
+			<div className="py-6 space-y-8">
+				<form
+					onSubmit={handleUpload}
+					className="flex flex-col gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 p-4"
 				>
-					{uploading ? "Uploading…" : "Upload"}
-				</button>
-			</form>
+					<label className="text-sm font-medium">Upload a photo</label>
+					<input type="file" name="file" accept="image/png,image/jpeg" required />
+					{uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
+					<button
+						type="submit"
+						disabled={uploading}
+						className="self-start rounded-full bg-blue-700 text-white px-4 py-2 text-sm disabled:opacity-50"
+					>
+						{uploading ? "Uploading…" : "Upload"}
+					</button>
+				</form>
 
-			{items.length === 0 && (
-				<p className="text-center text-gray-500">No photos to rate yet.</p>
-			)}
+				{items.length === 0 && (
+					<p className="text-center text-gray-500">No photos to rate yet.</p>
+				)}
 
-			<div className="space-y-10">
-				{items.map((item) => (
-					<PhotoCard key={item.id} item={item} />
-				))}
+				<div className="space-y-10">
+					{items.map((item) => (
+						<PhotoCard key={item.id} item={item} />
+					))}
+				</div>
 			</div>
 		</div>
 	);

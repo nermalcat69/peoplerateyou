@@ -4,6 +4,22 @@
 	--font-sans:
 		"Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
 		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+	--font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+	--color-rankd-bg: oklch(16% 0.004 264);
+	--color-rankd-elev: oklch(20% 0.006 264);
+	--color-rankd-elev-2: oklch(24% 0.008 264);
+	--color-rankd-border: oklch(34% 0.012 264);
+	--color-rankd-text: oklch(95% 0.004 264);
+	--color-rankd-dim: oklch(68% 0.012 264);
+	--color-rankd-faint: oklch(48% 0.012 264);
+	--color-rankd-ink: oklch(16% 0.004 264);
+	--color-rankd-green: oklch(87% 0.24 148);
+	--color-rankd-yellow: oklch(88% 0.19 95);
+	--color-rankd-blue: oklch(78% 0.14 240);
+	--color-rankd-purple: oklch(75% 0.16 300);
+	--color-rankd-pink: oklch(78% 0.17 350);
 }
 
 html,

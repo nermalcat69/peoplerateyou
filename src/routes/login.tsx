@@ -7,7 +7,7 @@ import { authClient } from "../lib/auth-client";
 export const Route = createFileRoute("/login")({
 	beforeLoad: async () => {
 		const user = await getCurrentUserFn();
-		if (user) throw redirect({ to: "/feed" });
+		if (user) throw redirect({ to: "/profile" });
 	},
 	component: LoginPage,
 });
@@ -39,7 +39,7 @@ function LoginPage() {
 		}
 
 		await router.invalidate();
-		await router.navigate({ to: "/feed" });
+		await router.navigate({ to: "/profile" });
 	}
 
 	return (
