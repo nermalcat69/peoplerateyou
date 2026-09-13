@@ -69,14 +69,14 @@ export const listFeedFn = createServerFn({ method: "GET" })
 		const { results } = await env.DB.prepare(
 			`SELECT
 				 p.id as id,
-				 u.display_name as ownerDisplayName,
+				 u.name as ownerDisplayName,
 				 p.created_at as createdAt,
 				 (SELECT AVG(score) FROM ratings WHERE photo_id = p.id) as avgScore,
 				 (SELECT COUNT(*) FROM ratings WHERE photo_id = p.id) as ratingCount,
 				 (SELECT COUNT(*) FROM comments WHERE photo_id = p.id) as commentCount,
 				 (SELECT score FROM ratings WHERE photo_id = p.id AND rater_id = ?) as myScore
 			 FROM photos p
-			 JOIN users u ON u.id = p.owner_id
+			 JOIN "user" u ON u.id = p.owner_id
 			 WHERE p.status = 'active' AND p.owner_id != ?
 			 ORDER BY p.created_at DESC
 			 LIMIT 50`,
@@ -151,7 +151,7 @@ export const addCommentFn = createServerFn({ method: "POST" })
 		return {
 			id: commentId,
 			body: data.body,
-			authorDisplayName: context.user.displayName,
+			authorDisplayName: context.user.name,
 			createdAt: new Date().toISOString(),
 		};
 	});
@@ -169,8 +169,8 @@ export const listCommentsFn = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		const env = await cfEnv();
 		const { results } = await env.DB.prepare(
-			`SELECT c.id as id, c.body as body, u.display_name as authorDisplayName, c.created_at as createdAt
-			 FROM comments c JOIN users u ON u.id = c.author_id
+			`SELECT c.id as id, c.body as body, u.name as authorDisplayName, c.created_at as createdAt
+			 FROM comments c JOIN "user" u ON u.id = c.author_id
 			 WHERE c.photo_id = ?
 			 ORDER BY c.created_at ASC
 			 LIMIT 100`,

@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 
-import { getCurrentUserFn, logoutFn } from "../server/auth";
+import { getCurrentUserFn } from "../server/auth";
+import { authClient } from "../lib/auth-client";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: async () => {
@@ -15,19 +15,18 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
 	const { user } = Route.useRouteContext();
 	const router = useRouter();
-	const logout = useServerFn(logoutFn);
 
 	return (
 		<div className="max-w-2xl mx-auto px-4">
 			<header className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700">
 				<span className="font-semibold">PeopleRateYou</span>
 				<div className="flex items-center gap-3 text-sm">
-					<span className="text-gray-500">{user.displayName}</span>
+					<span className="text-gray-500">{user.name}</span>
 					<button
 						type="button"
 						className="text-blue-700 dark:text-blue-500 hover:underline"
 						onClick={async () => {
-							await logout();
+							await authClient.signOut();
 							await router.invalidate();
 							await router.navigate({ to: "/login" });
 						}}

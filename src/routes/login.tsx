@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 
-import { getCurrentUserFn, loginFn, signupFn } from "../server/auth";
+import { getCurrentUserFn } from "../server/auth";
+import { authClient } from "../lib/auth-client";
 
 export const Route = createFileRoute("/login")({
 	beforeLoad: async () => {
@@ -14,8 +14,6 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
 	const router = useRouter();
-	const login = useServerFn(loginFn);
-	const signup = useServerFn(signupFn);
 	const [mode, setMode] = useState<"login" | "signup">("login");
 	const [error, setError] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
@@ -29,19 +27,19 @@ function LoginPage() {
 		const password = String(formData.get("password") ?? "");
 		const displayName = String(formData.get("displayName") ?? "");
 
-		try {
-			if (mode === "login") {
-				await login({ data: { email, password } });
-			} else {
-				await signup({ data: { email, password, displayName } });
-			}
-			await router.invalidate();
-			await router.navigate({ to: "/feed" });
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Something went wrong");
-		} finally {
-			setSubmitting(false);
+		const { error: authError } =
+			mode === "login"
+				? await authClient.signIn.email({ email, password })
+				: await authClient.signUp.email({ email, password, name: displayName });
+
+		setSubmitting(false);
+		if (authError) {
+			setError(authError.message ?? "Something went wrong");
+			return;
 		}
+
+		await router.invalidate();
+		await router.navigate({ to: "/feed" });
 	}
 
 	return (
