@@ -5,15 +5,26 @@ import { getCurrentUserFn } from "../server/auth";
 import { authClient } from "../lib/auth-client";
 
 export const Route = createFileRoute("/login")({
+	validateSearch: (search: Record<string, unknown>): { security?: string } => ({
+		...(typeof search.security === "string" ? { security: search.security } : {}),
+	}),
 	beforeLoad: async () => {
-		const user = await getCurrentUserFn();
+		const { user } = await getCurrentUserFn();
 		if (user) throw redirect({ to: "/profile" });
 	},
 	component: LoginPage,
 });
 
+const SECURITY_MESSAGES: Record<string, string> = {
+	location_mismatch:
+		"For your safety, you were signed out because this session was suddenly used from a different region. Please log in again.",
+	fingerprint_mismatch:
+		"For your safety, you were signed out because this session was suddenly used from a different device. Please log in again.",
+};
+
 function LoginPage() {
 	const router = useRouter();
+	const { security } = Route.useSearch();
 	const [mode, setMode] = useState<"login" | "signup">("login");
 	const [error, setError] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
@@ -45,6 +56,11 @@ function LoginPage() {
 	return (
 		<div className="max-w-sm mx-auto px-4 py-16 space-y-6">
 			<h1 className="text-xl font-semibold text-center">PeopleRateYou</h1>
+			{security && (
+				<p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 dark:text-amber-200 dark:bg-amber-950 dark:border-amber-900">
+					{SECURITY_MESSAGES[security] ?? SECURITY_MESSAGES.location_mismatch}
+				</p>
+			)}
 			<form onSubmit={handleSubmit} className="space-y-3">
 				{mode === "signup" && (
 					<input
