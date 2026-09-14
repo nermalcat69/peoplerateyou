@@ -40,7 +40,8 @@
 		"build": "vite build",
 		"cf-typegen": "wrangler types",
 		"deploy": "npm run build && wrangler deploy",
-		"dev": "vite dev",
+		"dev": "CLOUDFLARE_ENV=local vite dev",
+		"dev:remote": "vite dev",
 		"preview": "npm run build && vite preview",
 		"typecheck": "npm run cf-typegen && tsc -b"
 	},

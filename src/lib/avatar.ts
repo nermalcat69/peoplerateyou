@@ -1,4 +1,4 @@
-const ACCENTS = ["rankd-green", "rankd-blue", "rankd-purple", "rankd-yellow", "rankd-pink"] as const;
+const ACCENTS = ["rankd-blue", "rankd-purple", "rankd-yellow", "rankd-pink"] as const;
 
 export function initials(name: string): string {
 	const parts = name.trim().split(/\s+/).filter(Boolean);

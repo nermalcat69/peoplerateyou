@@ -74,7 +74,7 @@ function PeopleRatedPage() {
 								</div>
 							</div>
 							<div className="flex flex-col items-end gap-2.5">
-								<div className="font-display text-2xl font-extrabold text-rankd-green">{p.score.toFixed(1)}</div>
+								<div className="font-display text-2xl font-extrabold text-rankd-accent">{p.score.toFixed(1)}</div>
 								<Link
 									to="/people/$userId"
 									params={{ userId: p.id }}

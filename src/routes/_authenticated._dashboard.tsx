@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 
 import { getSidebarInfoFn } from "../server/people";
 import { Avatar } from "../components/Avatar";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { IconCompass, IconFlame, IconGear, IconImage, IconStar, IconUser, IconUsers } from "../components/icons";
 
 export const Route = createFileRoute("/_authenticated/_dashboard")({
@@ -25,7 +26,7 @@ function DashboardLayout() {
 			{/* Sidebar (desktop) */}
 			<aside className="hidden md:flex md:flex-col md:sticky md:top-0 md:h-screen w-60 shrink-0 border-r border-rankd-border p-4">
 				<div className="font-display text-2xl font-extrabold px-3 tracking-wide">
-					RANK<span className="text-rankd-green">D</span>
+					RANK<span className="text-rankd-accent">D</span>
 				</div>
 
 				<nav className="flex flex-col gap-1.5 mt-8">
@@ -34,7 +35,7 @@ function DashboardLayout() {
 							key={item.to}
 							to={item.to}
 							className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold text-rankd-dim"
-							activeProps={{ className: "!bg-rankd-green !text-rankd-ink" }}
+							activeProps={{ className: "!bg-rankd-accent !text-white" }}
 						>
 							<item.icon size={20} />
 							{item.label}
@@ -44,7 +45,9 @@ function DashboardLayout() {
 
 				<div className="grow" />
 
-				<div className="flex items-center gap-2.5 pt-4 border-t border-rankd-border">
+				<ThemeToggle compact />
+
+				<div className="flex items-center gap-2.5 pt-4 mt-4 border-t border-rankd-border">
 					<Avatar id={me.id} name={me.name} image={me.image} size="sm" />
 					<div className="min-w-0 leading-tight">
 						<div className="text-sm font-bold truncate">{me.name}</div>
@@ -98,7 +101,7 @@ function DashboardLayout() {
 						key={item.to}
 						to={item.to}
 						className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-rankd-dim"
-						activeProps={{ className: "!text-rankd-green" }}
+						activeProps={{ className: "!text-rankd-accent" }}
 					>
 						<item.icon size={20} />
 						<span className="text-[10px] font-semibold">{item.label}</span>

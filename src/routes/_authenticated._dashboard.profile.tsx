@@ -70,22 +70,22 @@ function ProfilePage() {
 					<div className="mt-2 max-w-sm">
 						<div className="flex justify-between text-[11px] font-bold text-rankd-faint mb-1.5 tracking-wide">
 							<span>PROFILE STRENGTH</span>
-							<span className="text-rankd-green">{data.profileCompletion}%</span>
+							<span className="text-rankd-accent">{data.profileCompletion}%</span>
 						</div>
 						<div className="h-1.5 rounded-full bg-rankd-elev-2 overflow-hidden">
-							<div className="h-full bg-rankd-green rounded-full" style={{ width: `${data.profileCompletion}%` }} />
+							<div className="h-full bg-rankd-accent rounded-full" style={{ width: `${data.profileCompletion}%` }} />
 						</div>
 					</div>
 				</div>
 			</div>
 
 			<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-				<StatCard label="People Rated" value={data.stats.peopleRated} sub={`+${data.stats.ratingsThisMonth} this month`} accent="green" icon="users" />
+				<StatCard label="People Rated" value={data.stats.peopleRated} sub={`+${data.stats.ratingsThisMonth} this month`} accent="accent" icon="users" />
 				<StatCard
 					label="Rating Activity"
 					value={data.stats.peopleRated}
 					sub="ratings given"
-					accent="blue"
+					accent="purple"
 					icon="trending"
 				/>
 				<StatCard
@@ -99,19 +99,19 @@ function ProfilePage() {
 					label="Profile Views"
 					value={data.stats.profileViews.toLocaleString()}
 					sub={`+${data.stats.profileViewsThisWeek} this week`}
-					accent="purple"
+					accent="pink"
 					icon="eye"
 				/>
 			</div>
 
-			<div className="rounded-2xl bg-rankd-green/10 border border-rankd-green p-6 md:p-7 flex flex-col md:flex-row items-center justify-between gap-5">
+			<div className="rounded-2xl bg-rankd-accent/10 border border-rankd-accent p-6 md:p-7 flex flex-col md:flex-row items-center justify-between gap-5">
 				<div>
 					<div className="font-display text-xl md:text-2xl font-extrabold">Ready to rate someone new?</div>
 					<div className="text-sm text-rankd-dim mt-1.5">Discover new profiles and grow your reputation as a rater.</div>
 				</div>
 				<Link
 					to="/discover"
-					className="flex items-center gap-2 px-6 py-3.5 rounded-lg text-sm font-bold bg-rankd-green text-rankd-ink shrink-0"
+					className="flex items-center gap-2 px-6 py-3.5 rounded-lg text-sm font-bold bg-rankd-accent text-white shrink-0"
 				>
 					Rate Someone
 					<IconArrowRight />
@@ -121,7 +121,7 @@ function ProfilePage() {
 			<div className="flex flex-col gap-4">
 				<div className="flex items-center justify-between">
 					<div className="font-display text-xl font-extrabold">Recent Ratings</div>
-					<Link to="/people-rated" className="flex items-center gap-1 text-sm font-bold text-rankd-green">
+					<Link to="/people-rated" className="flex items-center gap-1 text-sm font-bold text-rankd-accent">
 						View All
 						<IconChevronRight />
 					</Link>
@@ -142,7 +142,7 @@ function ProfilePage() {
 										@{r.username} · {timeAgo(r.createdAt)}
 									</div>
 								</div>
-								<div className="font-display text-xl font-extrabold text-rankd-green">{r.score.toFixed(1)}</div>
+								<div className="font-display text-xl font-extrabold text-rankd-accent">{r.score.toFixed(1)}</div>
 								<Link
 									to="/people/$userId"
 									params={{ userId: r.id }}
@@ -160,17 +160,17 @@ function ProfilePage() {
 }
 
 const ACCENT_TEXT = {
-	green: "text-rankd-green",
-	blue: "text-rankd-blue",
+	accent: "text-rankd-accent",
 	yellow: "text-rankd-yellow",
 	purple: "text-rankd-purple",
+	pink: "text-rankd-pink",
 } as const;
 
 const ACCENT_BG = {
-	green: "bg-rankd-green/15",
-	blue: "bg-rankd-blue/15",
+	accent: "bg-rankd-accent/15",
 	yellow: "bg-rankd-yellow/15",
 	purple: "bg-rankd-purple/15",
+	pink: "bg-rankd-pink/15",
 } as const;
 
 function StatCard({
@@ -256,7 +256,7 @@ function EditProfileForm({
 			<button
 				type="submit"
 				disabled={saving}
-				className="self-start px-4 py-2 rounded-lg text-sm font-bold bg-rankd-green text-rankd-ink disabled:opacity-50"
+				className="self-start px-4 py-2 rounded-lg text-sm font-bold bg-rankd-accent text-white disabled:opacity-50"
 			>
 				{saving ? "Saving…" : "Save"}
 			</button>

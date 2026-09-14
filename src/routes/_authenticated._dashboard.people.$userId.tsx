@@ -72,11 +72,11 @@ function PersonDetailPage() {
 					This is your own profile — head to Discover to rate someone else.
 				</div>
 			) : (
-				<div className="rounded-2xl bg-rankd-elev border border-rankd-green p-6 flex flex-col gap-4">
+				<div className="rounded-2xl bg-rankd-elev border border-rankd-accent p-6 flex flex-col gap-4">
 					<div className="flex items-center justify-between">
 						<div className="font-display text-lg font-extrabold">Your Rating</div>
 						{myRating !== null && (
-							<div className="font-display text-3xl font-extrabold text-rankd-green">{myRating.toFixed(1)}</div>
+							<div className="font-display text-3xl font-extrabold text-rankd-accent">{myRating.toFixed(1)}</div>
 						)}
 					</div>
 					<RatingScale value={myRating} onPick={handleRate} disabled={pending !== null} />

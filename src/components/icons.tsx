@@ -161,3 +161,29 @@ export function IconImage({ size = 30, className }: IconProps) {
 		</svg>
 	);
 }
+
+export function IconSun({ size = 16, className }: IconProps) {
+	return (
+		<svg {...base(size)} className={className}>
+			<circle cx="12" cy="12" r="4" />
+			<path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8" />
+		</svg>
+	);
+}
+
+export function IconMoon({ size = 16, className }: IconProps) {
+	return (
+		<svg {...base(size)} className={className}>
+			<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z" />
+		</svg>
+	);
+}
+
+export function IconMonitor({ size = 16, className }: IconProps) {
+	return (
+		<svg {...base(size)} className={className}>
+			<rect x="2.5" y="4" width="19" height="13" rx="1.5" />
+			<path d="M8 20.5h8M12 17v3.5" />
+		</svg>
+	);
+}

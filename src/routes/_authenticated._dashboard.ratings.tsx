@@ -16,13 +16,13 @@ function RatingsPage() {
 			<div className="font-display text-3xl font-extrabold">Ratings</div>
 
 			<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-				<MiniStat label="Total People Rated" value={data.totalPeopleRated} accent="text-rankd-green" />
+				<MiniStat label="Total People Rated" value={data.totalPeopleRated} accent="text-rankd-accent" />
 				<MiniStat
 					label="Average Rating Given"
 					value={data.averageRatingGiven === null ? "—" : data.averageRatingGiven.toFixed(1)}
 					accent="text-rankd-yellow"
 				/>
-				<MiniStat label="Highest Rating Given" value={data.highestRatingGiven ?? "—"} accent="text-rankd-blue" />
+				<MiniStat label="Highest Rating Given" value={data.highestRatingGiven ?? "—"} accent="text-rankd-pink" />
 				<MiniStat label="Ratings This Month" value={data.ratingsThisMonth} accent="text-rankd-purple" />
 			</div>
 
@@ -33,7 +33,7 @@ function RatingsPage() {
 						<div key={row.bucket} className="flex items-center gap-3">
 							<div className="w-12 text-xs font-bold text-rankd-faint">{row.bucket}</div>
 							<div className="flex-1 h-3.5 rounded-full bg-rankd-elev-2 overflow-hidden">
-								<div className="h-full rounded-full bg-rankd-green" style={{ width: `${row.pct}%` }} />
+								<div className="h-full rounded-full bg-rankd-accent" style={{ width: `${row.pct}%` }} />
 							</div>
 							<div className="w-7 text-right text-xs font-bold text-rankd-dim">{row.count}</div>
 						</div>
@@ -56,7 +56,7 @@ function RatingsPage() {
 									<div className="text-sm font-bold truncate">{r.name}</div>
 									<div className="text-xs text-rankd-faint mt-0.5">{timeAgo(r.createdAt)}</div>
 								</div>
-								<div className="font-display text-lg font-extrabold text-rankd-green">{r.score.toFixed(1)}</div>
+								<div className="font-display text-lg font-extrabold text-rankd-accent">{r.score.toFixed(1)}</div>
 							</div>
 						))}
 					</div>

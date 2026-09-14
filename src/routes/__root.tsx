@@ -9,6 +9,11 @@ import type { ErrorComponentProps } from "@tanstack/react-router";
 
 import "../app.css";
 
+// Applies a saved theme choice before first paint, so the page never
+// flashes the wrong theme. Runs as a plain inline script (not React) since
+// it has to execute before hydration.
+const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("rankd-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}})();`;
+
 export const Route = createRootRoute({
 	head: () => ({
 		meta: [
@@ -58,8 +63,9 @@ function ErrorComponent({ error }: ErrorComponentProps) {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
+				<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
 				<HeadContent />
 			</head>
 			<body>

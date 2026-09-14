@@ -16,7 +16,7 @@ export function RatingScale({
 					disabled={disabled}
 					onClick={() => onPick(score)}
 					className={`size-9 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 ${
-						value === score ? "bg-rankd-green text-rankd-ink" : "bg-rankd-elev-2 text-rankd-dim hover:text-rankd-text"
+						value === score ? "bg-rankd-accent text-white" : "bg-rankd-elev-2 text-rankd-dim hover:text-rankd-text"
 					}`}
 				>
 					{score}

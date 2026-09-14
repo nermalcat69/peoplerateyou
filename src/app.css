@@ -7,6 +7,46 @@
 	--font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
 	--font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
 
+	/* Light theme is the default token set. */
+	--color-rankd-bg: oklch(100% 0 0);
+	--color-rankd-elev: oklch(100% 0 0);
+	--color-rankd-elev-2: oklch(96% 0.003 264);
+	--color-rankd-border: oklch(89% 0.005 264);
+	--color-rankd-text: oklch(22% 0.004 264);
+	--color-rankd-dim: oklch(45% 0.008 264);
+	--color-rankd-faint: oklch(60% 0.008 264);
+
+	/* Text/icon color for anything drawn on a filled accent shape (avatar
+	   initials, decorative chips) — always near-black since those accents
+	   are pale regardless of theme. Not the same as button text: filled
+	   accent-blue buttons use white text directly (see components). */
+	--color-rankd-ink: oklch(18% 0.004 264);
+
+	/* Primary accent: Instagram's blue. Constant across themes. */
+	--color-rankd-accent: #0095f6;
+
+	/* Decorative accents (avatars, stat icons). Constant across themes. */
+	--color-rankd-yellow: oklch(88% 0.19 95);
+	--color-rankd-blue: oklch(78% 0.14 240);
+	--color-rankd-purple: oklch(75% 0.16 300);
+	--color-rankd-pink: oklch(78% 0.17 350);
+}
+
+/* Dark theme: follow the system by default, or an explicit choice via
+   data-theme on <html> (see ThemeToggle). */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--color-rankd-bg: oklch(16% 0.004 264);
+		--color-rankd-elev: oklch(20% 0.006 264);
+		--color-rankd-elev-2: oklch(24% 0.008 264);
+		--color-rankd-border: oklch(34% 0.012 264);
+		--color-rankd-text: oklch(95% 0.004 264);
+		--color-rankd-dim: oklch(68% 0.012 264);
+		--color-rankd-faint: oklch(48% 0.012 264);
+	}
+}
+
+:root[data-theme="dark"] {
 	--color-rankd-bg: oklch(16% 0.004 264);
 	--color-rankd-elev: oklch(20% 0.006 264);
 	--color-rankd-elev-2: oklch(24% 0.008 264);
@@ -14,19 +54,21 @@
 	--color-rankd-text: oklch(95% 0.004 264);
 	--color-rankd-dim: oklch(68% 0.012 264);
 	--color-rankd-faint: oklch(48% 0.012 264);
-	--color-rankd-ink: oklch(16% 0.004 264);
-	--color-rankd-green: oklch(87% 0.24 148);
-	--color-rankd-yellow: oklch(88% 0.19 95);
-	--color-rankd-blue: oklch(78% 0.14 240);
-	--color-rankd-purple: oklch(75% 0.16 300);
-	--color-rankd-pink: oklch(78% 0.17 350);
 }
 
 html,
 body {
 	@apply bg-white dark:bg-gray-950;
+}
 
-	@media (prefers-color-scheme: dark) {
+html {
+	color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+	html:not([data-theme="light"]) {
 		color-scheme: dark;
 	}
+}
+html[data-theme="dark"] {
+	color-scheme: dark;
 }

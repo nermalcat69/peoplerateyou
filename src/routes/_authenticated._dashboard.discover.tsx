@@ -52,7 +52,7 @@ function DiscoverPage() {
 								<Link
 									to="/people/$userId"
 									params={{ userId: p.id }}
-									className="flex-1 text-center py-2.5 rounded-lg text-xs font-bold bg-rankd-green text-rankd-ink"
+									className="flex-1 text-center py-2.5 rounded-lg text-xs font-bold bg-rankd-accent text-white"
 								>
 									Rate
 								</Link>

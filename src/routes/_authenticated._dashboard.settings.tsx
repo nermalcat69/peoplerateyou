@@ -4,6 +4,7 @@ import { getSidebarInfoFn } from "../server/people";
 import { getCurrentUserFn } from "../server/auth";
 import { authClient } from "../lib/auth-client";
 import { Avatar } from "../components/Avatar";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export const Route = createFileRoute("/_authenticated/_dashboard/settings")({
 	loader: async () => {
@@ -28,6 +29,14 @@ function SettingsPage() {
 					<div className="text-xs text-rankd-faint mt-0.5">@{me.username}</div>
 					<div className="text-xs text-rankd-faint mt-0.5">{me.email}</div>
 				</div>
+			</div>
+
+			<div className="rounded-2xl bg-rankd-elev border border-rankd-border p-6 max-w-lg flex items-center justify-between gap-4">
+				<div>
+					<div className="text-sm font-bold">Appearance</div>
+					<div className="text-xs text-rankd-faint mt-0.5">Choose how RANKD looks on this device.</div>
+				</div>
+				<ThemeToggle />
 			</div>
 
 			<div className="rounded-2xl bg-rankd-elev border border-rankd-border p-6 max-w-lg flex items-center justify-between">

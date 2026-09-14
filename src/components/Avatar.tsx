@@ -38,7 +38,6 @@ export function Avatar({
 }
 
 const ACCENT_BG = {
-	"rankd-green": "bg-rankd-green",
 	"rankd-blue": "bg-rankd-blue",
 	"rankd-purple": "bg-rankd-purple",
 	"rankd-yellow": "bg-rankd-yellow",
