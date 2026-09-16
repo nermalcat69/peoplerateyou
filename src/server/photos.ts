@@ -4,6 +4,7 @@ import { authMiddleware } from "./auth";
 import { cfEnv } from "./cf-env";
 import { buildSignedPhotoUrl } from "./image-url";
 import { moderateImage } from "./moderation";
+import { assertNotSpam } from "./spam";
 
 const ALLOWED_TYPES = new Set(["image/png", "image/jpeg"]);
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20MB
@@ -106,6 +107,9 @@ export const ratePhotoFn = createServerFn({ method: "POST" })
 	.validator(validateRating)
 	.handler(async ({ data, context }) => {
 		const env = await cfEnv();
+		const { success } = await env.RATING_RATE_LIMITER.limit({ key: context.user.id });
+		if (!success) throw new Error("Too many ratings, try again in a minute");
+
 		const photo = await env.DB.prepare("SELECT owner_id FROM photos WHERE id = ? AND status = 'active'")
 			.bind(data.photoId)
 			.first<{ owner_id: string }>();
@@ -128,7 +132,9 @@ function validateComment(data: unknown) {
 	if (typeof photoId !== "string" || !photoId) throw new Error("Invalid photo");
 	if (typeof body !== "string" || body.trim().length < 1 || body.length > 500)
 		throw new Error("Comment must be 1-500 characters");
-	return { photoId, body: body.trim() };
+	const trimmed = body.trim().replace(/\s+/g, " ");
+	assertNotSpam(trimmed);
+	return { photoId, body: trimmed };
 }
 
 export const addCommentFn = createServerFn({ method: "POST" })
@@ -136,10 +142,20 @@ export const addCommentFn = createServerFn({ method: "POST" })
 	.validator(validateComment)
 	.handler(async ({ data, context }) => {
 		const env = await cfEnv();
+		const { success } = await env.COMMENT_RATE_LIMITER.limit({ key: context.user.id });
+		if (!success) throw new Error("Too many comments, try again in a minute");
+
 		const photo = await env.DB.prepare("SELECT id FROM photos WHERE id = ? AND status = 'active'")
 			.bind(data.photoId)
 			.first();
 		if (!photo) throw new Error("Photo not found");
+
+		const lastComment = await env.DB.prepare(
+			"SELECT body FROM comments WHERE author_id = ? ORDER BY created_at DESC LIMIT 1",
+		)
+			.bind(context.user.id)
+			.first<{ body: string }>();
+		if (lastComment && lastComment.body === data.body) throw new Error("You just posted that — try something new");
 
 		const commentId = crypto.randomUUID();
 		await env.DB.prepare(

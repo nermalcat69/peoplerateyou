@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { authMiddleware } from "./auth";
 import { cfEnv } from "./cf-env";
+import { assertNotSpam } from "./spam";
 import { slugify } from "../lib/avatar";
 
 interface UserRow {
@@ -152,7 +153,11 @@ function validateProfileUpdate(data: unknown) {
 	const { bio, location } = data as Record<string, unknown>;
 	if (typeof bio !== "string" || bio.length > 280) throw new Error("Bio must be 280 characters or fewer");
 	if (typeof location !== "string" || location.length > 80) throw new Error("Location must be 80 characters or fewer");
-	return { bio: bio.trim(), location: location.trim() };
+	const trimmedBio = bio.trim();
+	const trimmedLocation = location.trim();
+	assertNotSpam(trimmedBio);
+	assertNotSpam(trimmedLocation);
+	return { bio: trimmedBio, location: trimmedLocation };
 }
 
 export const updateProfileFn = createServerFn({ method: "POST" })
@@ -341,6 +346,9 @@ export const rateUserFn = createServerFn({ method: "POST" })
 		if (data.userId === context.user.id) throw new Error("You can't rate yourself");
 
 		const env = await cfEnv();
+		const { success } = await env.RATING_RATE_LIMITER.limit({ key: context.user.id });
+		if (!success) throw new Error("Too many ratings, try again in a minute");
+
 		const target = await env.DB.prepare('SELECT id FROM "user" WHERE id = ?').bind(data.userId).first();
 		if (!target) throw new Error("Person not found");
 

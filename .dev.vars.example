@@ -1,0 +1,6 @@
+# Copy this file to .dev.vars for local development (that file is gitignored).
+# Any non-empty random string works for local dev; generate one with:
+#   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+IMAGE_SIGNING_KEY=
+BETTER_AUTH_SECRET=

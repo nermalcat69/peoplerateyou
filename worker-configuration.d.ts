@@ -7,6 +7,8 @@ interface __BaseEnv_Env {
 	UPLOAD_RATE_LIMITER: RateLimit;
 	VIEW_RATE_LIMITER: RateLimit;
 	AUTH_RATE_LIMITER: RateLimit;
+	RATING_RATE_LIMITER: RateLimit;
+	COMMENT_RATE_LIMITER: RateLimit;
 	AI: Ai;
 	IMAGES: ImagesBinding;
 	VALUE_FROM_CLOUDFLARE: "Hello from Hono/CF";
