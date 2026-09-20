@@ -2,27 +2,26 @@ import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
 // Loaded lazily and only from the verification route, since the WASM runtime
 // and model are several MB and most users never touch this page.
-let landmarkerPromise: Promise<FaceLandmarker> | null = null;
+const landmarkerPromises: Partial<Record<"VIDEO" | "IMAGE", Promise<FaceLandmarker>>> = {};
 
-function loadLandmarker(): Promise<FaceLandmarker> {
-	if (!landmarkerPromise) {
-		landmarkerPromise = (async () => {
-			const vision = await FilesetResolver.forVisionTasks(
-				"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm",
-			);
-			return FaceLandmarker.createFromOptions(vision, {
-				baseOptions: {
-					modelAssetPath:
-						"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-				},
-				runningMode: "VIDEO",
-				numFaces: 1,
-				outputFaceBlendshapes: true,
-				outputFacialTransformationMatrixes: true,
-			});
-		})();
-	}
-	return landmarkerPromise;
+function loadLandmarker(mode: "VIDEO" | "IMAGE" = "VIDEO"): Promise<FaceLandmarker> {
+	landmarkerPromises[mode] ??= (async () => {
+		const vision = await FilesetResolver.forVisionTasks(
+			"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm",
+		);
+		return FaceLandmarker.createFromOptions(vision, {
+			baseOptions: {
+				modelAssetPath:
+					"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+			},
+			runningMode: mode,
+			// IMAGE mode (uploaded reference photo) asks for 2 so we can reject group photos.
+			numFaces: mode === "IMAGE" ? 2 : 1,
+			outputFaceBlendshapes: mode === "VIDEO",
+			outputFacialTransformationMatrixes: mode === "VIDEO",
+		});
+	})();
+	return landmarkerPromises[mode]!;
 }
 
 export interface LivenessSample {
@@ -78,6 +77,13 @@ export async function detectLandmarksOnce(video: HTMLVideoElement): Promise<Norm
 	const landmarker = await loadLandmarker();
 	const result = landmarker.detectForVideo(video, performance.now());
 	return result.faceLandmarks?.[0] ?? null;
+}
+
+// Landmarks for an uploaded still photo. Returns null unless it contains exactly one face.
+export async function detectLandmarksInImage(image: HTMLImageElement): Promise<NormalizedPoint[] | null> {
+	const landmarker = await loadLandmarker("IMAGE");
+	const faces = landmarker.detect(image).faceLandmarks ?? [];
+	return faces.length === 1 ? faces[0] : null;
 }
 
 // Indices into MediaPipe's public 468-point face mesh topology

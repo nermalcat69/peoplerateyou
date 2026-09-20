@@ -16,7 +16,7 @@ import { extractFivePoints, type NormalizedPoint } from "./liveness";
 // sandbox's network couldn't reach the release-asset host to fetch it).
 //
 // Input: 112x112 RGB float32, [-1, 1] normalized, CHW, 5-point ArcFace
-// aligned (see faceAlign.ts). Output: 512-dim, already L2-normalized.
+// aligned (see faceAlign.ts). Output: 256-dim, already L2-normalized.
 const MODEL_URL = "/models/facex_nano.onnx";
 const INPUT_SIZE = 112;
 
@@ -24,6 +24,8 @@ let sessionPromise: Promise<ort.InferenceSession> | null = null;
 
 function loadSession(): Promise<ort.InferenceSession> {
 	if (!sessionPromise) {
+		// Vite dev/prod bundling doesn't serve ORT's .wasm next to its .mjs, so fetch from CDN (same as mediapipe in liveness.ts).
+		ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ort.env.versions.web}/dist/`;
 		sessionPromise = ort.InferenceSession.create(MODEL_URL, { executionProviders: ["wasm"] });
 	}
 	return sessionPromise;
@@ -44,30 +46,32 @@ function imageDataToTensor(imageData: ImageData): ort.Tensor {
 let srcCanvas: HTMLCanvasElement | null = null;
 let alignCanvas: HTMLCanvasElement | null = null;
 
-// Computes a 512-dim face embedding from the current video frame, aligning
+// Computes a 256-dim face embedding from the video frame or uploaded photo, aligning
 // on the caller-supplied MediaPipe landmarks (from liveness.ts) rather than
 // naively resizing the whole frame — embedding models are sensitive to
 // alignment, so an unaligned crop meaningfully hurts match accuracy.
 export async function computeFaceEmbedding(
-	video: HTMLVideoElement,
+	source: HTMLVideoElement | HTMLImageElement,
 	landmarks: NormalizedPoint[],
 ): Promise<number[]> {
+	const width = source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth;
+	const height = source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight;
 	srcCanvas ??= document.createElement("canvas");
 	alignCanvas ??= document.createElement("canvas");
 
-	srcCanvas.width = video.videoWidth;
-	srcCanvas.height = video.videoHeight;
+	srcCanvas.width = width;
+	srcCanvas.height = height;
 	const srcCtx = srcCanvas.getContext("2d", { willReadFrequently: true })!;
-	srcCtx.drawImage(video, 0, 0);
+	srcCtx.drawImage(source, 0, 0);
 
-	const kps = extractFivePoints(landmarks, video.videoWidth, video.videoHeight);
+	const kps = extractFivePoints(landmarks, width, height);
 	alignCanvas.width = 112;
 	alignCanvas.height = 112;
 	const alignCtx = alignCanvas.getContext("2d", { willReadFrequently: true })!;
 	const aligned = alignFace(
 		srcCtx,
-		video.videoWidth,
-		video.videoHeight,
+		width,
+		height,
 		[kps.leftEye, kps.rightEye, kps.nose, kps.mouthLeft, kps.mouthRight],
 		alignCtx,
 	);

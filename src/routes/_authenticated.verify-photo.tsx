@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { computeFaceEmbedding } from "../lib/faceEmbedding";
 import {
+	detectLandmarksInImage,
 	detectLandmarksOnce,
 	getFaceFraming,
 	pickChallenge,
@@ -96,38 +97,33 @@ function VerifyPhotoPage() {
 		}
 	}
 
-	async function handleCaptureReferencePhoto() {
-		if (!framing.ok || !landmarksRef.current) return;
+	// The reference photo is user-uploaded (it may be weeks old); the live
+	// camera capture in handleStartChallenge is what gets compared against it.
+	async function handleReferenceUpload(file: File) {
 		setStage("processing");
 		setError(null);
-		stopFramingLoop();
+		const url = URL.createObjectURL(file);
 		try {
-			const video = videoRef.current!;
-			const landmarks = landmarksRef.current;
-			const embedding = await computeFaceEmbedding(video, landmarks);
-
-			const captureCanvas = document.createElement("canvas");
-			captureCanvas.width = video.videoWidth;
-			captureCanvas.height = video.videoHeight;
-			captureCanvas.getContext("2d")!.drawImage(video, 0, 0);
-			const blob: Blob = await new Promise((resolve, reject) =>
-				captureCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Capture failed"))), "image/jpeg", 0.9),
-			);
+			const img = new Image();
+			img.src = url;
+			await img.decode();
+			const landmarks = await detectLandmarksInImage(img);
+			if (!landmarks) throw new Error("We need exactly one clearly visible face in the photo");
+			const embedding = await computeFaceEmbedding(img, landmarks);
 
 			const formData = new FormData();
-			formData.append("file", blob, "reference.jpg");
+			formData.append("file", file);
 			formData.append("embedding", JSON.stringify(embedding));
 			await setReferencePhoto({ data: formData });
 
-			stopCamera();
 			await router.invalidate();
 			setNeedsReferencePhoto(false);
-			setStage("idle");
 			setResultMessage(null);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Couldn't save your photo");
-			setStage("camera");
-			startFramingLoop();
+		} finally {
+			URL.revokeObjectURL(url);
+			setStage("idle");
 		}
 	}
 
@@ -171,7 +167,7 @@ function VerifyPhotoPage() {
 				</h1>
 				<p className="text-sm text-rankd-faint mt-1.5">
 					{needsReferencePhoto
-						? "Take a live photo of yourself. It's used only to confirm future selfies are really you, and it's never shown to other users or posted to the feed."
+						? "Upload a clear photo of your face (PNG or JPEG, just you). We'll match a live selfie against it. It's never shown to other users or posted to the feed."
 						: "Follow the on-screen prompts (blink, turn your head) so we can confirm a live person, then match it to your reference photo."}
 				</p>
 			</div>
@@ -187,13 +183,29 @@ function VerifyPhotoPage() {
 				</div>
 			)}
 
-			{stage === "idle" && !verified && (
+			{stage === "idle" && needsReferencePhoto && (
+				<label className="self-start px-5 py-3 rounded-lg text-sm font-bold bg-rankd-accent text-white cursor-pointer">
+					Upload photo
+					<input
+						type="file"
+						accept="image/png,image/jpeg"
+						className="hidden"
+						onChange={(e) => {
+							const file = e.target.files?.[0];
+							e.target.value = "";
+							if (file) void handleReferenceUpload(file);
+						}}
+					/>
+				</label>
+			)}
+
+			{stage === "idle" && !needsReferencePhoto && !verified && (
 				<button
 					type="button"
 					onClick={startCamera}
 					className="self-start px-5 py-3 rounded-lg text-sm font-bold bg-rankd-accent text-white"
 				>
-					{needsReferencePhoto ? "Turn on camera" : "Verify now"}
+					Verify now
 				</button>
 			)}
 
@@ -213,11 +225,11 @@ function VerifyPhotoPage() {
 				</p>
 				<button
 					type="button"
-					onClick={needsReferencePhoto ? handleCaptureReferencePhoto : handleStartChallenge}
+					onClick={handleStartChallenge}
 					disabled={stage === "challenge" || !framing.ok}
 					className="mt-4 px-5 py-3 rounded-lg text-sm font-bold bg-rankd-accent text-white disabled:opacity-50"
 				>
-					{needsReferencePhoto ? "Capture reference photo" : "Start verification"}
+					Start verification
 				</button>
 			</div>
 

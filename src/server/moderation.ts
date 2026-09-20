@@ -20,6 +20,8 @@ export interface ModerationResult {
 // a problem: a dedicated moderation API (e.g. Hive, Sightengine, AWS Rekognition).
 export async function moderateImage(bytes: ArrayBuffer): Promise<ModerationResult> {
 	const env = await cfEnv();
+	// The "local" wrangler env has no AI binding (no local simulator); it's always bound in deployed envs.
+	if (!env.AI) return { safe: true, reason: "moderation skipped: no AI binding" };
 	const preview = await env.IMAGES.input(new Response(bytes).body!)
 		.transform({ width: MODERATION_MAX_DIM, height: MODERATION_MAX_DIM, fit: "scale-down" })
 		.output({ format: "image/jpeg", quality: 80 });
