@@ -15,10 +15,13 @@ interface ProfileRow {
 	username: string;
 	bio: string;
 	location: string;
+	verification_status: string;
 }
 
+const PROFILE_COLUMNS = "username, bio, location, verification_status";
+
 async function ensureProfile(env: Env, userId: string, name: string): Promise<ProfileRow> {
-	const existing = await env.DB.prepare("SELECT username, bio, location FROM profiles WHERE user_id = ?")
+	const existing = await env.DB.prepare(`SELECT ${PROFILE_COLUMNS} FROM profiles WHERE user_id = ?`)
 		.bind(userId)
 		.first<ProfileRow>();
 	if (existing) return existing;
@@ -30,10 +33,10 @@ async function ensureProfile(env: Env, userId: string, name: string): Promise<Pr
 	} catch {
 		// Lost a race with another request creating the same row; fall through to re-read.
 	}
-	const row = await env.DB.prepare("SELECT username, bio, location FROM profiles WHERE user_id = ?")
+	const row = await env.DB.prepare(`SELECT ${PROFILE_COLUMNS} FROM profiles WHERE user_id = ?`)
 		.bind(userId)
 		.first<ProfileRow>();
-	return row ?? { username, bio: "", location: "" };
+	return row ?? { username, bio: "", location: "", verification_status: "unverified" };
 }
 
 function computeStreak(days: string[]): number {
@@ -61,6 +64,23 @@ export interface RatedPersonRow {
 	username: string;
 	score: number;
 	createdAt: string;
+	verified: boolean;
+}
+
+const RATED_PERSON_SELECT = `
+	 u.id as id,
+	 u.name as name,
+	 u.image as image,
+	 p.username as username,
+	 p.verification_status as verificationStatus,
+	 pr.score as score,
+	 pr.created_at as createdAt`;
+
+function mapRatedPersonRow(
+	row: Omit<RatedPersonRow, "verified"> & { verificationStatus: string },
+): RatedPersonRow {
+	const { verificationStatus, ...rest } = row;
+	return { ...rest, verified: verificationStatus === "verified" };
 }
 
 export const getSidebarInfoFn = createServerFn({ method: "GET" })
@@ -72,7 +92,13 @@ export const getSidebarInfoFn = createServerFn({ method: "GET" })
 			.first<UserRow>();
 		if (!user) throw new Error("User not found");
 		const profile = await ensureProfile(env, user.id, user.name);
-		return { id: user.id, name: user.name, image: user.image, username: profile.username };
+		return {
+			id: user.id,
+			name: user.name,
+			image: user.image,
+			username: profile.username,
+			verified: profile.verification_status === "verified",
+		};
 	});
 
 export const getDashboardFn = createServerFn({ method: "GET" })
@@ -106,7 +132,7 @@ export const getDashboardFn = createServerFn({ method: "GET" })
 				.bind(userId)
 				.all<{ d: string }>(),
 			env.DB.prepare(
-				`SELECT u.id as id, u.name as name, u.image as image, p.username as username, pr.score as score, pr.created_at as createdAt
+				`SELECT ${RATED_PERSON_SELECT}
 				 FROM person_ratings pr
 				 JOIN "user" u ON u.id = pr.ratee_id
 				 LEFT JOIN profiles p ON p.user_id = u.id
@@ -115,7 +141,7 @@ export const getDashboardFn = createServerFn({ method: "GET" })
 				 LIMIT 4`,
 			)
 				.bind(userId)
-				.all<RatedPersonRow>(),
+				.all<Omit<RatedPersonRow, "verified"> & { verificationStatus: string }>(),
 		]);
 
 		const peopleRatedCount = peopleRated?.c ?? 0;
@@ -135,6 +161,7 @@ export const getDashboardFn = createServerFn({ method: "GET" })
 			bio: profile.bio,
 			location: profile.location,
 			joinedAt: user.joinedAt,
+			verified: profile.verification_status === "verified",
 			profileCompletion,
 			stats: {
 				peopleRated: peopleRatedCount,
@@ -144,7 +171,7 @@ export const getDashboardFn = createServerFn({ method: "GET" })
 				profileViewsThisWeek: viewsWeek?.c ?? 0,
 			},
 			streak: computeStreak(streakRows.results.map((r) => r.d)),
-			recentRatings: recent.results,
+			recentRatings: recent.results.map(mapRatedPersonRow),
 		};
 	});
 
@@ -179,7 +206,7 @@ export const listPeopleRatedFn = createServerFn({ method: "GET" })
 	.handler(async ({ context }) => {
 		const env = await cfEnv();
 		const { results } = await env.DB.prepare(
-			`SELECT u.id as id, u.name as name, u.image as image, p.username as username, pr.score as score, pr.created_at as createdAt
+			`SELECT ${RATED_PERSON_SELECT}
 			 FROM person_ratings pr
 			 JOIN "user" u ON u.id = pr.ratee_id
 			 LEFT JOIN profiles p ON p.user_id = u.id
@@ -188,8 +215,8 @@ export const listPeopleRatedFn = createServerFn({ method: "GET" })
 			 LIMIT 100`,
 		)
 			.bind(context.user.id)
-			.all<RatedPersonRow>();
-		return results;
+			.all<Omit<RatedPersonRow, "verified"> & { verificationStatus: string }>();
+		return results.map(mapRatedPersonRow);
 	});
 
 const DISTRIBUTION_BUCKETS = ["9-10", "7-8", "5-6", "3-4", "0-2"] as const;
@@ -217,7 +244,7 @@ export const getRatingsPageFn = createServerFn({ method: "GET" })
 				.bind(userId)
 				.all<{ bucket: string; count: number }>(),
 			env.DB.prepare(
-				`SELECT u.id as id, u.name as name, u.image as image, p.username as username, pr.score as score, pr.created_at as createdAt
+				`SELECT ${RATED_PERSON_SELECT}
 				 FROM person_ratings pr
 				 JOIN "user" u ON u.id = pr.ratee_id
 				 LEFT JOIN profiles p ON p.user_id = u.id
@@ -226,7 +253,7 @@ export const getRatingsPageFn = createServerFn({ method: "GET" })
 				 LIMIT 8`,
 			)
 				.bind(userId)
-				.all<RatedPersonRow>(),
+				.all<Omit<RatedPersonRow, "verified"> & { verificationStatus: string }>(),
 		]);
 
 		const counts = new Map(distribution.results.map((r) => [r.bucket, r.count]));
@@ -242,7 +269,7 @@ export const getRatingsPageFn = createServerFn({ method: "GET" })
 				count: counts.get(bucket) ?? 0,
 				pct: Math.round(((counts.get(bucket) ?? 0) / maxCount) * 100),
 			})),
-			recentActivity: recent.results,
+			recentActivity: recent.results.map(mapRatedPersonRow),
 		};
 	});
 
@@ -253,6 +280,7 @@ export interface DiscoverPersonRow {
 	username: string;
 	bio: string;
 	location: string;
+	verified: boolean;
 }
 
 export const listDiscoverFn = createServerFn({ method: "GET" })
@@ -272,8 +300,8 @@ export const listDiscoverFn = createServerFn({ method: "GET" })
 
 		const people = await Promise.all(
 			users.map(async (u) => {
-				const profile = await ensureProfile(env, u.id, u.name);
-				return { ...u, ...profile } satisfies DiscoverPersonRow;
+				const { verification_status, ...profile } = await ensureProfile(env, u.id, u.name);
+				return { ...u, ...profile, verified: verification_status === "verified" } satisfies DiscoverPersonRow;
 			}),
 		);
 		return people;
@@ -323,6 +351,7 @@ export const getPersonFn = createServerFn({ method: "GET" })
 			bio: profile.bio,
 			location: profile.location,
 			joinedAt: user.joinedAt,
+			verified: profile.verification_status === "verified",
 			timesRated: received?.c ?? 0,
 			avgRatingReceived: received?.avg ?? null,
 			myRating: myRating?.score ?? null,

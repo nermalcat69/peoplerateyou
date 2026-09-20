@@ -28,7 +28,7 @@ function ProfilePage() {
 	return (
 		<>
 			<div className="rounded-2xl bg-rankd-elev border border-rankd-border p-6 md:p-8 flex flex-col md:flex-row gap-6">
-				<Avatar id={data.id} name={data.name} image={data.image} size="2xl" />
+				<Avatar id={data.id} name={data.name} image={data.image} size="2xl" verified={data.verified} />
 				<div className="flex-1 min-w-0 flex flex-col gap-2.5">
 					<div className="flex items-start justify-between gap-4 flex-wrap">
 						<div>
@@ -135,7 +135,7 @@ function ProfilePage() {
 					<div className="flex flex-col gap-2.5">
 						{data.recentRatings.map((r) => (
 							<div key={r.id} className="rounded-2xl bg-rankd-elev border border-rankd-border px-4 py-3.5 flex items-center gap-3.5">
-								<Avatar id={r.id} name={r.name} image={r.image} />
+								<Avatar id={r.id} name={r.name} image={r.image} verified={r.verified} />
 								<div className="flex-1 min-w-0">
 									<div className="text-sm font-bold truncate">{r.name}</div>
 									<div className="text-xs text-rankd-faint mt-0.5">

@@ -35,7 +35,7 @@ function SettingsPage() {
 			<div className="font-display text-3xl font-extrabold">Settings</div>
 
 			<div className="rounded-2xl bg-rankd-elev border border-rankd-border p-6 flex items-center gap-4 max-w-lg">
-				<Avatar id={me.id} name={me.name} image={me.image} size="lg" />
+				<Avatar id={me.id} name={me.name} image={me.image} size="lg" verified={me.verified} />
 				<div>
 					<div className="text-sm font-bold">{me.name}</div>
 					<div className="text-xs text-rankd-faint mt-0.5">@{me.username}</div>

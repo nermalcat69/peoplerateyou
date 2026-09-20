@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { listDiscoverFn, rateUserFn } from "../server/people";
 import { accentFor, initials } from "../lib/avatar";
-import { IconChevronLeft, IconChevronRight, IconMapPin } from "../components/icons";
+import { IconBadgeCheck, IconChevronLeft, IconChevronRight, IconMapPin } from "../components/icons";
 
 export const Route = createFileRoute("/_authenticated/_dashboard/discover")({
 	loader: () => listDiscoverFn(),
@@ -98,7 +98,10 @@ function DiscoverPage() {
 							</div>
 						)}
 						<div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/40 to-transparent p-5 pt-16">
-							<div className="text-2xl font-display font-extrabold text-white leading-tight">{person.name}</div>
+							<div className="text-2xl font-display font-extrabold text-white leading-tight flex items-center gap-1.5">
+								{person.name}
+								{person.verified && <IconBadgeCheck size={18} className="text-rankd-accent" />}
+							</div>
 							<div className="text-sm text-white/80 mt-1 flex items-center gap-1.5">
 								@{person.username}
 								{person.location && (

@@ -48,7 +48,7 @@ function DashboardLayout() {
 				<ThemeToggle compact />
 
 				<div className="flex items-center gap-2.5 pt-4 mt-4 border-t border-rankd-border">
-					<Avatar id={me.id} name={me.name} image={me.image} size="sm" />
+					<Avatar id={me.id} name={me.name} image={me.image} size="sm" verified={me.verified} />
 					<div className="min-w-0 leading-tight">
 						<div className="text-sm font-bold truncate">{me.name}</div>
 						<div className="text-xs text-rankd-faint truncate">@{me.username}</div>

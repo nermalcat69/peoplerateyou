@@ -179,6 +179,15 @@ export function IconMoon({ size = 16, className }: IconProps) {
 	);
 }
 
+export function IconBadgeCheck({ size = 14, className }: IconProps) {
+	return (
+		<svg {...base(size)} className={className} strokeWidth={2.2}>
+			<path d="M12 2.5l2.2 1.3 2.5-.3 1 2.3 2.3 1-.3 2.5 1.3 2.2-1.3 2.2.3 2.5-2.3 1-1 2.3-2.5-.3L12 21.5l-2.2-1.3-2.5.3-1-2.3-2.3-1 .3-2.5L3 12l1.3-2.2-.3-2.5 2.3-1 1-2.3 2.5.3z" />
+			<path d="M9 12.5l2 2 4-4.5" />
+		</svg>
+	);
+}
+
 export function IconMonitor({ size = 16, className }: IconProps) {
 	return (
 		<svg {...base(size)} className={className}>

@@ -129,7 +129,7 @@ function LoginPage() {
 
 	return (
 		<div className="max-w-sm mx-auto px-4 py-16 space-y-6">
-			<h1 className="text-xl font-semibold text-center">PeopleRateYou</h1>
+			<h1 className="text-xl font-semibold text-center dark:text-white">PeopleRateYou</h1>
 			{security && (
 				<p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 dark:text-amber-200 dark:bg-amber-950 dark:border-amber-900">
 					{SECURITY_MESSAGES[security] ?? SECURITY_MESSAGES.location_mismatch}
@@ -149,7 +149,7 @@ function LoginPage() {
 					type="email"
 					placeholder="Email"
 					required
-					className="w-full rounded border border-gray-300 dark:border-gray-700 px-3 py-2 bg-transparent"
+					className="w-full rounded border border-gray-300 dark:border-gray-700 px-3 py-2 bg-transparent dark:text-white"
 				/>
 				<input
 					name="password"

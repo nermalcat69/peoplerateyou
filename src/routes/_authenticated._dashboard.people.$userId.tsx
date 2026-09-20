@@ -38,7 +38,7 @@ function PersonDetailPage() {
 			</Link>
 
 			<div className="rounded-2xl bg-rankd-elev border border-rankd-border p-6 md:p-8 flex flex-col md:flex-row gap-6 items-center md:items-start">
-				<Avatar id={person.id} name={person.name} image={person.image} size="xl" />
+				<Avatar id={person.id} name={person.name} image={person.image} size="xl" verified={person.verified} />
 				<div className="flex-1 min-w-0 flex flex-col gap-2 text-center md:text-left">
 					<div className="font-display text-3xl font-extrabold leading-none">{person.name}</div>
 					<div className="text-sm text-rankd-faint">@{person.username}</div>

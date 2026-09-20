@@ -51,7 +51,7 @@ function RatingsPage() {
 					<div className="flex flex-col gap-2.5">
 						{data.recentActivity.map((r) => (
 							<div key={r.id} className="rounded-2xl bg-rankd-elev border border-rankd-border px-4 py-3.5 flex items-center gap-3.5">
-								<Avatar id={r.id} name={r.name} image={r.image} size="sm" />
+								<Avatar id={r.id} name={r.name} image={r.image} size="sm" verified={r.verified} />
 								<div className="flex-1 min-w-0">
 									<div className="text-sm font-bold truncate">{r.name}</div>
 									<div className="text-xs text-rankd-faint mt-0.5">{timeAgo(r.createdAt)}</div>

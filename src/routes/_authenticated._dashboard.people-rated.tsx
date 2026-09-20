@@ -65,7 +65,7 @@ function PeopleRatedPage() {
 				<div className="grid md:grid-cols-2 gap-4">
 					{visible.map((p) => (
 						<div key={p.id} className="rounded-2xl bg-rankd-elev border border-rankd-border p-5 flex items-center gap-4">
-							<Avatar id={p.id} name={p.name} image={p.image} size="lg" />
+							<Avatar id={p.id} name={p.name} image={p.image} size="lg" verified={p.verified} />
 							<div className="flex-1 min-w-0">
 								<div className="text-sm font-bold truncate">{p.name}</div>
 								<div className="text-xs text-rankd-faint mt-0.5">@{p.username}</div>
