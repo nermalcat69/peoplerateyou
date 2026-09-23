@@ -35,6 +35,10 @@
 		"binding": "AI",
 		"remote": true
 	},
+	"assets": {
+		"directory": "./public/",
+		"binding": "ASSETS"
+	},
 	"ratelimits": [
 		{
 			"name": "UPLOAD_RATE_LIMITER",
@@ -105,6 +109,10 @@
 			"images": {
 				"binding": "IMAGES"
 			},
+			"assets": {
+				"directory": "./public/",
+				"binding": "ASSETS"
+			},
 			"ratelimits": [
 				{
 					"name": "UPLOAD_RATE_LIMITER",
@@ -159,11 +167,6 @@
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
 	 */
-	/**
-	 * Static Assets
-	 * https://developers.cloudflare.com/workers/static-assets/binding/
-	 */
-	// "assets": { "directory": "./public/", "binding": "ASSETS" },
 	/**
 	 * Service Bindings (communicate between multiple Workers)
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings

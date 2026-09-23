@@ -20,4 +20,13 @@ export default defineConfig({
 		// the client environment, even though that code path never runs there.
 		rollupOptions: { external: ["cloudflare:workers"] },
 	},
+	optimizeDeps: {
+		// onnxruntime-web does its own dynamic import()/fetch() of WASM glue at
+		// runtime (see src/lib/faceEmbedding.ts). Vite's esbuild-based dep
+		// pre-bundler doesn't handle that pattern correctly and can produce a
+		// broken chunk (surfaces as "Cannot read properties of undefined
+		// (reading 'run')" when the session tries to execute) — excluding it
+		// lets the browser load it as a native ESM module instead.
+		exclude: ["onnxruntime-web"],
+	},
 });

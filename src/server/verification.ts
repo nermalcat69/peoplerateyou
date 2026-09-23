@@ -8,8 +8,11 @@ import { moderateImage } from "./moderation";
 
 const REFERENCE_MAX_DIM = 800;
 const REFERENCE_MAX_BYTES = 8 * 1024 * 1024;
-// facex_nano.onnx (see src/lib/faceEmbedding.ts) outputs a fixed 256-dim,
-// L2-normalized embedding.
+// facex_nano.onnx (see src/lib/faceEmbedding.ts) outputs a fixed 256-dim
+// embedding — verified directly against the actual model file (its output
+// metadata reports shape [1, 256]), not the FaceX README's generic "512-dim"
+// claim, which apparently describes their larger xs/tiny/standard variants
+// rather than nano specifically.
 const EMBEDDING_DIM = 256;
 
 // Cosine similarity threshold for "same person". facex-wasm's own SDK
@@ -107,16 +110,13 @@ export const getVerificationStatusFn = createServerFn({ method: "GET" })
 			env.DB.prepare("SELECT verification_status FROM profiles WHERE user_id = ?")
 				.bind(context.user.id)
 				.first<{ verification_status: string }>(),
-			env.DB.prepare("SELECT r2_key FROM verification_photos WHERE user_id = ?")
+			env.DB.prepare("SELECT id FROM verification_photos WHERE user_id = ?")
 				.bind(context.user.id)
-				.first<{ r2_key: string }>(),
+				.first<{ id: string }>(),
 		]);
-		// Needs both the D1 row and the R2 object; either one missing (e.g. wiped
-		// local R2 state) means the reference photo has to be captured again.
-		const hasReferencePhoto = !!reference && !!(await env.PHOTOS.head(reference.r2_key));
 		return {
-			status: hasReferencePhoto ? (profile?.verification_status ?? "unverified") : "unverified",
-			hasReferencePhoto,
+			status: profile?.verification_status ?? "unverified",
+			hasReferencePhoto: !!reference,
 		};
 	});
 
@@ -230,10 +230,10 @@ export const completeVerificationFn = createServerFn({ method: "POST" })
 			};
 		}
 
-		const reference = await env.DB.prepare("SELECT embedding, r2_key FROM verification_photos WHERE user_id = ?")
+		const reference = await env.DB.prepare("SELECT embedding FROM verification_photos WHERE user_id = ?")
 			.bind(context.user.id)
-			.first<{ embedding: string; r2_key: string }>();
-		if (!reference || !(await env.PHOTOS.head(reference.r2_key))) {
+			.first<{ embedding: string }>();
+		if (!reference) {
 			await logAttempt("rejected_no_reference_photo", null, true);
 			return { verified: false, reason: "Add a reference photo first." };
 		}

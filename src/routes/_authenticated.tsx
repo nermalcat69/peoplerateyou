@@ -15,11 +15,13 @@ export const Route = createFileRoute("/_authenticated")({
 
 		// New users must set a "this is me" reference photo before using the
 		// rest of the app, so a verified badge always means something. Skip the
-		// check on the verify-photo route itself to avoid an infinite redirect.
-		if (location.pathname !== "/verify-photo") {
+		// check on the upload-photo route itself to avoid an infinite redirect;
+		// /verify-photo doesn't need its own exemption since it's only ever
+		// reached after this same check has already passed.
+		if (location.pathname !== "/upload-photo") {
 			const { hasReferencePhoto } = await getVerificationStatusFn();
 			if (!hasReferencePhoto) {
-				throw redirect({ to: "/verify-photo" });
+				throw redirect({ to: "/upload-photo" });
 			}
 		}
 

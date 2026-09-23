@@ -1,4 +1,10 @@
-import * as ort from "onnxruntime-web";
+// The default "onnxruntime-web" entry bundles WebGPU/WebNN support and picks
+// the JSEP backend variant, which needs extra files (a .jsep.wasm binary
+// plus a dynamically-imported .jsep.mjs loader). We only ever use the plain
+// CPU "wasm" execution provider, so import the wasm-only build instead —
+// see the wasmPaths comment below for why its runtime files are fetched
+// from a CDN rather than self-hosted.
+import * as ort from "onnxruntime-web/wasm";
 
 import { alignFace } from "./faceAlign";
 import { extractFivePoints, type NormalizedPoint } from "./liveness";
@@ -16,7 +22,9 @@ import { extractFivePoints, type NormalizedPoint } from "./liveness";
 // sandbox's network couldn't reach the release-asset host to fetch it).
 //
 // Input: 112x112 RGB float32, [-1, 1] normalized, CHW, 5-point ArcFace
-// aligned (see faceAlign.ts). Output: 256-dim, already L2-normalized.
+// aligned (see faceAlign.ts). Output: 256-dim (verified directly against the
+// model's own output metadata — the FaceX README's "512-dim" claim
+// apparently describes their larger xs/tiny/standard variants, not nano).
 const MODEL_URL = "/models/facex_nano.onnx";
 const INPUT_SIZE = 112;
 
@@ -24,8 +32,36 @@ let sessionPromise: Promise<ort.InferenceSession> | null = null;
 
 function loadSession(): Promise<ort.InferenceSession> {
 	if (!sessionPromise) {
-		// Vite dev/prod bundling doesn't serve ORT's .wasm next to its .mjs, so fetch from CDN (same as mediapipe in liveness.ts).
-		ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ort.env.versions.web}/dist/`;
+		// onnxruntime-web needs its own WASM runtime (a .wasm binary plus a
+		// .mjs glue module it `import()`s at runtime), separate from the model
+		// file. Self-hosting these under public/ doesn't work: Vite's dev
+		// server explicitly refuses to resolve an `import()` against a path
+		// under public/ (files there are meant to be fetched as plain static
+		// assets, not pulled into the module graph). Pointing wasmPaths at an
+		// external URL sidesteps that restriction entirely — pinned to the
+		// exact installed onnxruntime-web version (see package.json) so it
+		// can't silently drift out of sync on a dependency bump.
+		// onnxruntime-web is pinned to an exact 1.18.0 (see package.json — not
+		// a "^" range) rather than the current latest. Versions from ~1.19
+		// onward dropped the plain, non-threaded ort-wasm-simd.wasm build and
+		// ship only pthread/SharedArrayBuffer-requiring binaries, which fail
+		// to execute correctly (opaque "Cannot read properties of undefined
+		// (reading 'run')" deep in their code) unless the page sends
+		// Cross-Origin-Opener-Policy/Cross-Origin-Embedder-Policy headers —
+		// this app doesn't, and adding those app-wide has its own blast radius
+		// (breaks any cross-origin resource, e.g. OAuth avatar images, that
+		// doesn't send CORP/CORS headers). numThreads: 1 makes 1.18.0 select
+		// the plain non-threaded binary, sidestepping the issue entirely.
+		//
+		// Self-hosted at public/ort/ (copied from
+		// node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm) rather than a
+		// CDN. Unlike 1.30's threaded build, 1.18.0's plain wasm loader has no
+		// separate dynamically-`import()`-ed .mjs companion file per variant —
+		// the Emscripten glue lives inside the already-statically-imported
+		// main bundle — so this doesn't hit Vite's dev-server restriction on
+		// resolving an import() against a path under public/.
+		ort.env.wasm.wasmPaths = "/ort/";
+		ort.env.wasm.numThreads = 1;
 		sessionPromise = ort.InferenceSession.create(MODEL_URL, { executionProviders: ["wasm"] });
 	}
 	return sessionPromise;
@@ -46,23 +82,31 @@ function imageDataToTensor(imageData: ImageData): ort.Tensor {
 let srcCanvas: HTMLCanvasElement | null = null;
 let alignCanvas: HTMLCanvasElement | null = null;
 
-// Computes a 256-dim face embedding from the video frame or uploaded photo, aligning
-// on the caller-supplied MediaPipe landmarks (from liveness.ts) rather than
+export type EmbeddableSource = HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
+
+function sourceDimensions(source: EmbeddableSource): { width: number; height: number } {
+	if (source instanceof HTMLVideoElement) return { width: source.videoWidth, height: source.videoHeight };
+	if (source instanceof HTMLImageElement) return { width: source.naturalWidth, height: source.naturalHeight };
+	return { width: source.width, height: source.height };
+}
+
+// Computes a face embedding from a frame/image, aligning on the
+// caller-supplied MediaPipe landmarks (from liveness.ts) rather than
 // naively resizing the whole frame — embedding models are sensitive to
-// alignment, so an unaligned crop meaningfully hurts match accuracy.
+// alignment, so an unaligned crop meaningfully hurts match accuracy. Works
+// on a live video frame or a static uploaded photo alike.
 export async function computeFaceEmbedding(
-	source: HTMLVideoElement | HTMLImageElement,
+	source: EmbeddableSource,
 	landmarks: NormalizedPoint[],
 ): Promise<number[]> {
-	const width = source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth;
-	const height = source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight;
 	srcCanvas ??= document.createElement("canvas");
 	alignCanvas ??= document.createElement("canvas");
 
+	const { width, height } = sourceDimensions(source);
 	srcCanvas.width = width;
 	srcCanvas.height = height;
 	const srcCtx = srcCanvas.getContext("2d", { willReadFrequently: true })!;
-	srcCtx.drawImage(source, 0, 0);
+	srcCtx.drawImage(source, 0, 0, width, height);
 
 	const kps = extractFivePoints(landmarks, width, height);
 	alignCanvas.width = 112;

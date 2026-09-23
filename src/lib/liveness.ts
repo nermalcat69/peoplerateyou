@@ -72,10 +72,15 @@ export interface NormalizedPoint {
 
 // Runs a single detection pass against the shared landmarker, for callers
 // (framing guidance, embedding capture) that need a one-off read rather than
-// the timed challenge loop below.
-export async function detectLandmarksOnce(video: HTMLVideoElement): Promise<NormalizedPoint[] | null> {
+// the timed challenge loop below. The landmarker is configured for VIDEO
+// mode, so this always calls detectForVideo (never .detect()) — but that
+// still accepts a static image/canvas source just fine, which is what the
+// upload-photo flow uses this for.
+export async function detectLandmarksOnce(
+	source: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement,
+): Promise<NormalizedPoint[] | null> {
 	const landmarker = await loadLandmarker();
-	const result = landmarker.detectForVideo(video, performance.now());
+	const result = landmarker.detectForVideo(source, performance.now());
 	return result.faceLandmarks?.[0] ?? null;
 }
 

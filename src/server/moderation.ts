@@ -20,8 +20,17 @@ export interface ModerationResult {
 // a problem: a dedicated moderation API (e.g. Hive, Sightengine, AWS Rekognition).
 export async function moderateImage(bytes: ArrayBuffer): Promise<ModerationResult> {
 	const env = await cfEnv();
-	// The "local" wrangler env has no AI binding (no local simulator); it's always bound in deployed envs.
-	if (!env.AI) return { safe: true, reason: "moderation skipped: no AI binding" };
+
+	// The "local" wrangler environment (see wrangler.jsonc) deliberately omits
+	// the AI binding — Workers AI has no local simulator, so including it
+	// would force every local dev session to authenticate against the real
+	// Cloudflare API just to upload a photo. Skip moderation rather than
+	// crash; use `npm run dev:remote` when you need real moderation behavior.
+	if (!env.AI) {
+		console.warn("[moderation] env.AI unavailable (local dev?) — skipping content moderation");
+		return { safe: true, reason: "moderation skipped (no AI binding in this environment)" };
+	}
+
 	const preview = await env.IMAGES.input(new Response(bytes).body!)
 		.transform({ width: MODERATION_MAX_DIM, height: MODERATION_MAX_DIM, fit: "scale-down" })
 		.output({ format: "image/jpeg", quality: 80 });
