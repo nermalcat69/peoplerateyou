@@ -1,5 +1,18 @@
 @import "tailwindcss" source(".");
 
+/* Make `dark:` follow the same rules as the tokens below: an explicit
+   data-theme wins, otherwise the system preference. */
+@custom-variant dark {
+	&:where([data-theme="dark"], [data-theme="dark"] *) {
+		@slot;
+	}
+	@media (prefers-color-scheme: dark) {
+		&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+			@slot;
+		}
+	}
+}
+
 @theme {
 	--font-sans:
 		"Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
@@ -30,6 +43,12 @@
 	--color-rankd-blue: oklch(78% 0.14 240);
 	--color-rankd-purple: oklch(75% 0.16 300);
 	--color-rankd-pink: oklch(78% 0.17 350);
+
+	/* Status colors, tuned per theme below. */
+	--color-rankd-danger: oklch(52% 0.2 27);
+	--color-rankd-warn-text: oklch(40% 0.09 75);
+	--color-rankd-warn-bg: oklch(97% 0.04 90);
+	--color-rankd-warn-border: oklch(88% 0.09 90);
 }
 
 /* Dark theme: follow the system by default, or an explicit choice via
@@ -43,6 +62,10 @@
 		--color-rankd-text: oklch(95% 0.004 264);
 		--color-rankd-dim: oklch(68% 0.012 264);
 		--color-rankd-faint: oklch(48% 0.012 264);
+		--color-rankd-danger: oklch(72% 0.17 25);
+		--color-rankd-warn-text: oklch(88% 0.1 90);
+		--color-rankd-warn-bg: oklch(25% 0.04 80);
+		--color-rankd-warn-border: oklch(38% 0.06 80);
 	}
 }
 
@@ -54,11 +77,25 @@
 	--color-rankd-text: oklch(95% 0.004 264);
 	--color-rankd-dim: oklch(68% 0.012 264);
 	--color-rankd-faint: oklch(48% 0.012 264);
+	--color-rankd-danger: oklch(72% 0.17 25);
+	--color-rankd-warn-text: oklch(88% 0.1 90);
+	--color-rankd-warn-bg: oklch(25% 0.04 80);
+	--color-rankd-warn-border: oklch(38% 0.06 80);
 }
 
 html,
 body {
-	@apply bg-white dark:bg-gray-950;
+	@apply bg-rankd-bg text-rankd-text;
+}
+
+input,
+textarea,
+select {
+	color: inherit;
+}
+input::placeholder,
+textarea::placeholder {
+	color: var(--color-rankd-faint);
 }
 
 html {

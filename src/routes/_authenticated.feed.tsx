@@ -40,15 +40,15 @@ function FeedPage() {
 
 	return (
 		<div className="max-w-2xl mx-auto px-4">
-			<header className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700">
+			<header className="flex items-center justify-between py-4 border-b border-rankd-border">
 				<span className="font-semibold">PeopleRateYou</span>
 				<div className="flex items-center gap-3 text-sm">
-					<Link to="/profile" className="text-blue-700 dark:text-blue-500 hover:underline">
+					<Link to="/profile" className="text-rankd-accent hover:underline">
 						Dashboard
 					</Link>
 					<button
 						type="button"
-						className="text-blue-700 dark:text-blue-500 hover:underline"
+						className="text-rankd-accent hover:underline"
 						onClick={async () => {
 							await authClient.signOut();
 							await router.invalidate();
@@ -63,22 +63,22 @@ function FeedPage() {
 			<div className="py-6 space-y-8">
 				<form
 					onSubmit={handleUpload}
-					className="flex flex-col gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 p-4"
+					className="flex flex-col gap-3 rounded-2xl border border-rankd-border p-4"
 				>
 					<label className="text-sm font-medium">Upload a photo</label>
 					<input type="file" name="file" accept="image/png,image/jpeg" required />
-					{uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
+					{uploadError && <p className="text-sm text-rankd-danger">{uploadError}</p>}
 					<button
 						type="submit"
 						disabled={uploading}
-						className="self-start rounded-full bg-blue-700 text-white px-4 py-2 text-sm disabled:opacity-50"
+						className="self-start rounded-full bg-rankd-accent text-white px-4 py-2 text-sm disabled:opacity-50"
 					>
 						{uploading ? "Uploading…" : "Upload"}
 					</button>
 				</form>
 
 				{items.length === 0 && (
-					<p className="text-center text-gray-500">No photos to rate yet.</p>
+					<p className="text-center text-rankd-dim">No photos to rate yet.</p>
 				)}
 
 				<div className="space-y-10">
@@ -115,7 +115,7 @@ function PhotoCard({ item }: { item: FeedItem }) {
 				alt={`Photo by ${item.ownerDisplayName}`}
 				className="w-full rounded-2xl object-cover"
 			/>
-			<div className="flex items-center justify-between text-sm text-gray-500">
+			<div className="flex items-center justify-between text-sm text-rankd-dim">
 				<span>{item.ownerDisplayName}</span>
 				<span>
 					{item.avgScore !== null ? item.avgScore.toFixed(1) : "—"} avg · {item.ratingCount}{" "}
@@ -131,8 +131,8 @@ function PhotoCard({ item }: { item: FeedItem }) {
 						onClick={() => handleRate(score)}
 						className={`h-8 w-8 rounded-full text-sm border ${
 							myScore === score
-								? "bg-blue-700 text-white border-blue-700"
-								: "border-gray-300 dark:border-gray-700"
+								? "bg-rankd-accent text-white border-rankd-accent"
+								: "border-rankd-border"
 						}`}
 					>
 						{score}
@@ -174,7 +174,7 @@ function Comments({ photoId, commentCount }: { photoId: string; commentCount: nu
 
 	return (
 		<div className="text-sm">
-			<button type="button" className="text-blue-700 dark:text-blue-500 hover:underline" onClick={toggleOpen}>
+			<button type="button" className="text-rankd-accent hover:underline" onClick={toggleOpen}>
 				{open ? "Hide comments" : `View comments (${commentCount})`}
 			</button>
 			{open && (
@@ -191,9 +191,9 @@ function Comments({ photoId, commentCount }: { photoId: string; commentCount: nu
 							onChange={(e) => setText(e.target.value)}
 							placeholder="Add a comment"
 							maxLength={500}
-							className="flex-1 rounded border border-gray-300 dark:border-gray-700 px-2 py-1 bg-transparent"
+							className="flex-1 rounded border border-rankd-border px-2 py-1 bg-transparent"
 						/>
-						<button type="submit" disabled={submitting} className="text-blue-700 dark:text-blue-500">
+						<button type="submit" disabled={submitting} className="text-rankd-accent">
 							Post
 						</button>
 					</form>

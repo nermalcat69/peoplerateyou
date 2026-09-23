@@ -44,7 +44,7 @@ function DemoPreview() {
 
 	return (
 		<div className="mx-auto w-full max-w-sm flex flex-col gap-3">
-			<p className="text-center text-xs font-bold text-gray-500 dark:text-gray-400">
+			<p className="text-center text-xs font-bold text-rankd-dim">
 				Try it out — here's what rating people looks like
 			</p>
 			<div className="relative rounded-3xl overflow-hidden bg-rankd-elev border border-rankd-border aspect-3/4 shrink-0">
@@ -84,7 +84,7 @@ function DemoPreview() {
 					Rated {score.toFixed(1)} · Next Profile
 				</button>
 			</div>
-			<p className="text-center text-xs text-gray-500 dark:text-gray-400">Sign up to rate real people and get rated yourself.</p>
+			<p className="text-center text-xs text-rankd-dim">Sign up to rate real people and get rated yourself.</p>
 		</div>
 	);
 }
@@ -129,9 +129,9 @@ function LoginPage() {
 
 	return (
 		<div className="max-w-sm mx-auto px-4 py-16 space-y-6">
-			<h1 className="text-xl font-semibold text-center dark:text-white">PeopleRateYou</h1>
+			<h1 className="text-xl font-semibold text-center">PeopleRateYou</h1>
 			{security && (
-				<p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 dark:text-amber-200 dark:bg-amber-950 dark:border-amber-900">
+				<p className="text-sm text-rankd-warn-text bg-rankd-warn-bg border border-rankd-warn-border rounded-lg px-3 py-2">
 					{SECURITY_MESSAGES[security] ?? SECURITY_MESSAGES.location_mismatch}
 				</p>
 			)}
@@ -141,7 +141,7 @@ function LoginPage() {
 						name="displayName"
 						placeholder="Display name"
 						required
-						className="w-full rounded border border-gray-300 dark:border-gray-700 px-3 py-2 bg-transparent"
+						className="w-full rounded border border-rankd-border px-3 py-2 bg-transparent"
 					/>
 				)}
 				<input
@@ -149,7 +149,7 @@ function LoginPage() {
 					type="email"
 					placeholder="Email"
 					required
-					className="w-full rounded border border-gray-300 dark:border-gray-700 px-3 py-2 bg-transparent dark:text-white"
+					className="w-full rounded border border-rankd-border px-3 py-2 bg-transparent"
 				/>
 				<input
 					name="password"
@@ -157,25 +157,25 @@ function LoginPage() {
 					placeholder="Password"
 					minLength={8}
 					required
-					className="w-full rounded border border-gray-300 dark:border-gray-700 px-3 py-2 bg-transparent"
+					className="w-full rounded border border-rankd-border px-3 py-2 bg-transparent"
 				/>
-				{error && <p className="text-sm text-red-600">{error}</p>}
+				{error && <p className="text-sm text-rankd-danger">{error}</p>}
 				<button
 					type="submit"
 					disabled={submitting}
-					className="w-full rounded-full bg-blue-700 text-white px-4 py-2 text-sm disabled:opacity-50"
+					className="w-full rounded-full bg-rankd-accent text-white px-4 py-2 text-sm disabled:opacity-50"
 				>
 					{mode === "login" ? "Log in" : "Sign up"}
 				</button>
 			</form>
 			<button
 				type="button"
-				className="w-full text-sm text-blue-700 dark:text-blue-500 hover:underline"
+				className="w-full text-sm text-rankd-accent hover:underline"
 				onClick={() => setMode(mode === "login" ? "signup" : "login")}
 			>
 				{mode === "login" ? "Need an account? Sign up" : "Already have an account? Log in"}
 			</button>
-			<div className="pt-6 border-t border-gray-200 dark:border-gray-800">
+			<div className="pt-6 border-t border-rankd-border">
 				<DemoPreview />
 			</div>
 		</div>
